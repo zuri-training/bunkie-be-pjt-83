@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 ROOM_CHOICES = (
     ("Double Double", "Double Double"),
@@ -21,10 +22,6 @@ ROOMMATES_CHOICES = (
 )
 
 # Create your models here.
-class User(models.Model):
-    first_name = models.CharField(max_length = 25)
-    last_name = models.CharField(max_length = 25)
-    email = models.EmailField()
 
 class Room(models.Model):
     room_type = models.CharField(
