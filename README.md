@@ -57,7 +57,7 @@ The application is a REST API written in Python
 In progress.
 
 
-## PJT-83 Contributors
+## PJT-83 Backend Contributors
 Subomi Samuel
 - GitHub - https://github.com/Subomi-samuel
 
