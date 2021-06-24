@@ -37,41 +37,72 @@ ROOMMATES_CHOICES = (
 # Create your models here.
 
 
+########################## Generating Token for every User #################################################
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.models import Token
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
+
+
 
 ##################################### Base User manager #########################################################
 class UserManager(BaseUserManager):
     use_in_migrations = True
 
-    def _create_user(self, email, password, **extra_fields):
+    def create_user(self, email, password=None, is_staff=False, is_active=True, is_admin=False, **extra_fields):
         """
         Creates and saves a User with the given email and password.
         """
         if not email:
             raise ValueError('The given email must be set')
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
+        if not password:
+            raise ValueError('user must have a password')
+
+        user_obj = self.model(
+            email=email,
+            **extra_fields
+        )
+        user_obj.set_password(password)
+        user_obj.staff = is_staff
+        user_obj.admin = is_admin
+        user_obj.active = is_active
+        user_obj.save(using=self._db)
+        return user_obj
+
+    def create_staffuser(self, email, password=None):
+        user = self.create_user(
+            email,
+            password=password,
+            is_staff=True,
+
+
+        )
         return user
 
-    def create_user(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_superuser', False)
-        return self._create_user(email, password, **extra_fields)
+    def create_superuser(self, email, password=None):
+        user = self.create_user(
+            email,
+            password=password,
+            is_staff=True,
+            is_admin=True,
 
-    def create_superuser(self, email, password, **extra_fields):
-        extra_fields.setdefault('is_superuser', True)
 
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
-
-        return self._create_user(email, password, **extra_fields)
+        )
+        return user
 
 
 ############################# account section ############################
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField( default=True)
+    active = models.BooleanField( default=True)
+    staff       = models.BooleanField(default=False)
+    admin       = models.BooleanField(default=False)
     phone = models.CharField(max_length=300, blank=True)
     address = models.CharField(max_length=300, blank=True)
     student_status = models.BooleanField(default=False)
@@ -84,6 +115,25 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def has_perm(self, perm, obj=None):
+        return True
+
+    def has_module_perms(self, app_label):
+
+        return True
+
+    @property
+    def is_staff(self):
+        return self.staff
+
+    @property
+    def is_admin(self):
+        return self.admin
+
+    @property
+    def is_active(self):
+        return self.active
 
 
 
@@ -119,18 +169,16 @@ class LandLord(models.Model):
 ############### Room model #########################################33
 
 class Room(models.Model):
-    room_type = models.CharField(
-        max_length = 20,
-        choices = ROOM_CHOICES,
-        default = 'Double'
-    )
+    room_type = models.CharField(max_length = 20,choices = ROOM_CHOICES,default = 'Double')
     description = models.TextField()
-    location = models.CharField(max_length = 400)
-    no_of_roommates = models.CharField(
-        max_length = 20,
-        choices = ROOMMATES_CHOICES,
-        default = '1'
-    )
+    state = models.CharField(max_length = 400,blank=True)
+    university = models.CharField(max_length=500,blank=True)
+    no_of_roommates = models.CharField(max_length = 20,choices = ROOMMATES_CHOICES,default = '1')
+    type_of_apartment = models.CharField(max_length=400, blank=True)
     price = models.SmallIntegerField()
     rental_period = models.DurationField()
-    photo = models.ImageField(upload_to = 'uploads/', height_field = 100, width_field = 100)
+    photo = models.ImageField(upload_to = 'uploads/', height_field = 100, width_field = 100, blank=True)
+
+
+    def __str__(self):
+        return str(self.room_type)
