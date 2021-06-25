@@ -166,7 +166,8 @@ class LandLord(models.Model):
 
 
 
-############### Room model #########################################33
+############### Room model #########################################
+############### Created by Baiye Moyosore #################
 
 class Room(models.Model):
     landlord = models.ForeignKey(LandLord, related_name='landlords', on_delete=models.CASCADE)
