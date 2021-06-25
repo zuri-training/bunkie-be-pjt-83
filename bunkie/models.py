@@ -169,6 +169,7 @@ class LandLord(models.Model):
 ############### Room model #########################################33
 
 class Room(models.Model):
+    landlord = models.ForeignKey(LandLord, related_name='landlords', on_delete=models.CASCADE)
     room_type = models.CharField(max_length = 20,choices = ROOM_CHOICES,default = 'Double')
     description = models.TextField()
     state = models.CharField(max_length = 400,blank=True)
@@ -182,3 +183,21 @@ class Room(models.Model):
 
     def __str__(self):
         return str(self.room_type)
+
+
+
+
+############################ Comments #################################
+class Comment(models.Model): 
+    post = models.ForeignKey(Room,
+                             on_delete=models.CASCADE,
+                             related_name='rooms')
+    name = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE) 
+    body = models.TextField() 
+    created = models.DateTimeField(auto_now_add=True) 
+
+    class Meta: 
+        ordering = ('created',) 
+
+    def __str__(self): 
+        return 'Comment by {} on {}'.format(self.name, self.post) 
