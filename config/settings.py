@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'bunkie',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_auth',
+    # 'rest_auth',
     'django_filters',
     'rest_framework_simplejwt.token_blacklist',
     # documentation
@@ -75,7 +75,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 
 ################ Rest framework authentication ##########################
